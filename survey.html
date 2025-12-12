@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gaze-Based Reading Study</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #2980b9;
+            --bg: #f4f4f9;
+            --text: #333;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 60px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border-top: 6px solid var(--primary);
+        }
+        h1 { color: var(--primary); border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        h2 { font-size: 1.2em; color: #555; margin-top: 30px; margin-bottom: 10px; font-weight: 600; }
+        
+        .step { display: none; }
+        .step.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Formal Consent Box Styling */
+        .consent-box {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            padding: 20px;
+            height: 300px;
+            overflow-y: scroll;
+            font-size: 0.95em;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .consent-box p { margin-bottom: 15px; }
+        .consent-box ul { margin-bottom: 15px; padding-left: 20px; }
+
+        /* Form Elements */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; }
+        input, select, textarea {
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 15px;
+        }
+        
+        /* Checkbox Group for Ethics */
+        .checkbox-group {
+            background: #eef2f5;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .checkbox-group label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+        .checkbox-group input { width: 18px; height: 18px; }
+
+        /* Likert Scale (Radio) */
+        .likert-container {
+            display: flex; justify-content: space-between; background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #eee;
+        }
+        .likert-opt { text-align: center; flex: 1; cursor: pointer; }
+        .likert-opt input { margin-bottom: 5px; cursor: pointer; }
+
+        /* Buttons */
+        .btn {
+            background-color: var(--primary); color: white; border: none; padding: 16px 32px;
+            font-size: 16px; border-radius: 4px; cursor: pointer; margin-top: 20px; width: 100%;
+            transition: background 0.2s;
+        }
+        .btn:hover { background-color: var(--accent); }
+        .btn-danger { background-color: #c0392b; }
+        .btn-danger:hover { background-color: #a93226; }
+
+        .id-badge { float: right; background: #eee; padding: 5px 10px; border-radius: 4px; font-family: monospace; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <span id="displayID" class="id-badge">ID: Generating...</span>
+    <div style="clear: both;"></div>
+
+    <div id="step-ethics" class="step active">
+        <h1>Participant Informed Consent</h1>
+        <p><strong>Study Title:</strong> Evaluation of Digital Reading Interfaces</p>
+        <p><strong>Principal Investigator:</strong> [Your Name / Team Name]</p>
+
+        <div class="consent-box">
+            <p><strong>1. Purpose of the Study:</strong><br>
+            You are invited to participate in a research study investigating how users interact with and process digital text. We are specifically looking at reading flow and comprehension.</p>
+            
+            <p><strong>2. Procedures:</strong><br>
+            If you agree to participate, you will be asked to:
+            <ul>
+                <li>Complete a brief demographic survey.</li>
+                <li>Read a series of short paragraphs on a computer screen.</li>
+                <li>Allow your eye movements to be recorded using a remote eye-tracking device (Tobii).</li>
+                <li>Answer questions about your experience.</li>
+            </ul>
+            </p>
+
+            <p><strong>3. Risks and Discomforts:</strong><br>
+            There are no known risks associated with this study. The eye-tracker uses harmless infrared light. You may experience minor eye fatigue from reading on a screen.</p>
+
+            <p><strong>4. Confidentiality & Data Protection (GDPR):</strong><br>
+            Your data will be anonymized. No personally identifiable information (PII) will be linked to your eye-tracking data. Your data will be stored securely and used solely for academic research purposes.</p>
+
+            <p><strong>5. Voluntary Participation & Withdrawal:</strong><br>
+            Your participation is entirely voluntary. You may refuse to participate or withdraw from the study at any time without penalty. If you withdraw, your data will be deleted immediately.</p>
+        </div>
+
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="check1"> I confirm that I am at least 18 years of age.</label>
+        </div>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="check2"> I understand that my eye movements will be recorded.</label>
+        </div>
+        <div class="checkbox-group">
+            <label><input type="checkbox" id="check3"> I have read the above information and voluntarily agree to participate.</label>
+        </div>
+
+        <button class="btn" onclick="validateConsent()">I Consent & Begin Study</button>
+    </div>
+
+    <div id="step-pre" class="step">
+        <h1>Demographics & Background</h1>
+        
+        <div class="form-group">
+            <label>1. Age</label>
+            <input type="number" id="age">
+        </div>
+
+        <div class="form-group">
+            <label>2. Gender</label>
+            <select id="gender">
+                <option value="">Select...</option>
+                <option value="Female">Female</option>
+                <option value="Male">Male</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>3. Cultural Background / Nationality</label>
+            <span style="font-size: 0.9em; color: #666;">(Required for analyzing cultural context in reading patterns)</span>
+            <input type="text" id="culture" placeholder="e.g., German, Indian, American...">
+        </div>
+
+        <div class="form-group">
+            <label>4. English Proficiency Level</label>
+            <select id="english">
+                <option value="Native">Native Speaker</option>
+                <option value="C2">C2 (Proficient)</option>
+                <option value="C1">C1 (Advanced)</option>
+                <option value="B2">B2 (Upper Intermediate)</option>
+                <option value="B1">B1 (Intermediate)</option>
+                <option value="Basic">Basic (A1/A2)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>5. Vision Correction (Technological Constraint)</label>
+            <select id="vision">
+                <option value="None">None (Normal Vision)</option>
+                <option value="Glasses">Glasses</option>
+                <option value="Contacts">Contact Lenses</option>
+            </select>
+        </div>
+
+        <button class="btn" onclick="nextStep('step-pre', 'step-experiment-placeholder')">Submit & Proceed to Calibration</button>
+    </div>
+
+    <div id="step-experiment-placeholder" class="step">
+        <div style="text-align: center; padding: 40px; border: 2px dashed #ccc;">
+            
+            <h1>Experimental Phase</h1>
+            
+            <div style="background: #e8f5e9; color: #2e7d32; padding: 20px; text-align: left; margin: 20px 0;">
+                <strong>Instructions for Researcher:</strong>
+                <ol>
+                    <li>Ensure participant is seated 60cm from screen.</li>
+                    <li>Minimize this browser window.</li>
+                    <li>Launch the <strong>Python Eye-Tracking Application</strong>.</li>
+                    <li>Perform the 9-point Calibration.</li>
+                    <li>Run the Reading Task (Randomized Block).</li>
+                    <li>Return to this screen once the Python app closes.</li>
+                </ol>
+            </div>
+            
+            <button class="btn" onclick="nextStep('step-experiment-placeholder', 'step-post')">Task Complete - Open Post-Survey</button>
+        </div>
+    </div>
+
+    <div id="step-post" class="step">
+        <h1>Post-Study Questionnaire</h1>
+
+        <div class="form-group">
+            <label>1. Prior to this study, how familiar were you with the term "AI Hallucination"?</label>
+            <select id="prior_knowledge">
+                <option value="1">1 - Never heard of it</option>
+                <option value="2">2 - Heard of it, unsure of meaning</option>
+                <option value="3">3 - Somewhat familiar</option>
+                <option value="4">4 - Very familiar</option>
+                <option value="5">5 - Expert / My field of study</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>2. In your own words, please define "AI Hallucination".</label>
+            <textarea id="hallucination_def" placeholder="I think it means..."></textarea>
+        </div>
+
+        <h2>Experiment Feedback</h2>
+        <p>Please rate your agreement with the following statements:</p>
+
+        <div class="form-group">
+            <label>3. I found the experiment instructions easy to follow.</label>
+            <div class="likert-container">
+                <div class="likert-opt"><input type="radio" name="eval_instruct" value="1"><br>Strongly Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_instruct" value="2"><br>Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_instruct" value="3"><br>Neutral</div>
+                <div class="likert-opt"><input type="radio" name="eval_instruct" value="4"><br>Agree</div>
+                <div class="likert-opt"><input type="radio" name="eval_instruct" value="5"><br>Strongly Agree</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>4. I found the eye-tracking equipment uncomfortable or distracting.</label>
+            <div class="likert-container">
+                <div class="likert-opt"><input type="radio" name="eval_equip" value="1"><br>Strongly Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_equip" value="2"><br>Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_equip" value="3"><br>Neutral</div>
+                <div class="likert-opt"><input type="radio" name="eval_equip" value="4"><br>Agree</div>
+                <div class="likert-opt"><input type="radio" name="eval_equip" value="5"><br>Strongly Agree</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>5. The flow of the tasks felt logical and well-organized.</label>
+            <div class="likert-container">
+                <div class="likert-opt"><input type="radio" name="eval_flow" value="1"><br>Strongly Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_flow" value="2"><br>Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_flow" value="3"><br>Neutral</div>
+                <div class="likert-opt"><input type="radio" name="eval_flow" value="4"><br>Agree</div>
+                <div class="likert-opt"><input type="radio" name="eval_flow" value="5"><br>Strongly Agree</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>6. I felt confident knowing what I had to do during the study.</label>
+            <div class="likert-container">
+                <div class="likert-opt"><input type="radio" name="eval_conf" value="1"><br>Strongly Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_conf" value="2"><br>Disagree</div>
+                <div class="likert-opt"><input type="radio" name="eval_conf" value="3"><br>Neutral</div>
+                <div class="likert-opt"><input type="radio" name="eval_conf" value="4"><br>Agree</div>
+                <div class="likert-opt"><input type="radio" name="eval_conf" value="5"><br>Strongly Agree</div>
+            </div>
+        </div>
+
+        <button class="btn" onclick="submitPostSurvey()">Submit Answers</button>
+    </div>
+
+    <div id="step-debrief" class="step">
+        <h1 style="color: #c0392b;">Debriefing Statement</h1>
+        
+        <div style="background: #fff5f5; border-left: 5px solid #c0392b; padding: 20px; color: #333;">
+            <p><strong>Please Read Carefully: Clarification of Study Purpose</strong></p>
+            <p>Thank you for your participation. We would now like to provide you with the full details of this research.</p>
+            <p><strong>The Deception:</strong> At the beginning of this study, we informed you that this was a study on "Readability" and "Digital Interfaces." This was a cover story.</p>
+            <p><strong>The True Purpose:</strong> The actual purpose of this study is to detect <strong>User Uncertainty and AI Hallucination Detection</strong>. Some of the texts you read contained deliberate factual errors (hallucinations). We were recording your eye movements to identify physiological patterns (such as regressions or fixation duration) that occur when you doubt the information presented.</p>
+            <p><strong>Why was this necessary?</strong> If we had told you in advance that we were testing for errors, you likely would have read the text differently (with a "proofreading" mindset). To capture natural reading behavior and genuine uncertainty, we could not reveal the true variable (Hallucinations) until now.</p>
+        </div>
+
+        <h2>Re-Consent</h2>
+        <p>Because you were not fully informed at the start, we must ask for your permission again to use your data for this specific purpose.</p>
+
+        <div class="checkbox-group">
+            <label>
+                <input type="checkbox" id="reconsent-check"> 
+                <strong>I understand the true purpose of the study and I give permission for my eye-tracking and survey data to be used for "Hallucination Detection" research.</strong>
+            </label>
+        </div>
+
+        <button class="btn" onclick="downloadData()">Confirm & Save My Data</button>
+        <button class="btn btn-danger" onclick="withdrawData()">No, Withdraw My Participation (Delete Data)</button>
+    </div>
+
+</div>
+
+<script>
+    // Generate ID
+    const userId = "P-" + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('displayID').innerText = "Participant ID: " + userId;
+
+    let userData = {
+        id: userId,
+        timestamp: new Date().toISOString(),
+        preSurvey: {},
+        postSurvey: {},
+        ethics: { consented: false, reconsented: false }
+    };
+
+    function nextStep(currentId, nextId) {
+        document.getElementById(currentId).classList.remove('active');
+        document.getElementById(nextId).classList.add('active');
+    }
+
+    // Phase 1: Validate Initial Consent
+    function validateConsent() {
+        if (!document.getElementById('check1').checked || 
+            !document.getElementById('check2').checked || 
+            !document.getElementById('check3').checked) {
+            alert("You must agree to all terms in the Consent Form to proceed.");
+            return;
+        }
+        userData.ethics.consented = true;
+        nextStep('step-ethics', 'step-pre');
+    }
+
+    // Helper for Radio Buttons
+    function getRadioVal(name) {
+        let radios = document.getElementsByName(name);
+        for (let r of radios) { if (r.checked) return r.value; }
+        return "N/A";
+    }
+
+    // Phase 4: Submit Survey
+    function submitPostSurvey() {
+        // Capture Pre-Survey (if not already done)
+        userData.preSurvey = {
+            age: document.getElementById('age').value,
+            gender: document.getElementById('gender').value,
+            culture: document.getElementById('culture').value,
+            english: document.getElementById('english').value,
+            vision: document.getElementById('vision').value
+        };
+
+        // Capture Post-Survey
+        userData.postSurvey = {
+            prior_knowledge: document.getElementById('prior_knowledge').value,
+            definition: document.getElementById('hallucination_def').value,
+            feedback_instructions: getRadioVal('eval_instruct'),
+            feedback_equipment: getRadioVal('eval_equip'),
+            feedback_flow: getRadioVal('eval_flow'),
+            feedback_confidence: getRadioVal('eval_conf')
+        };
+
+        nextStep('step-post', 'step-debrief');
+    }
+
+    // Phase 5: Download Data (Re-Consent)
+    function downloadData() {
+        if (!document.getElementById('reconsent-check').checked) {
+            alert("Please confirm that you agree to the use of your data (Re-Consent) to save.");
+            return;
+        }
+        userData.ethics.reconsented = true;
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData, null, 2));
+        const dlNode = document.createElement('a');
+        dlNode.setAttribute("href", dataStr);
+        dlNode.setAttribute("download", userId + "_study_data.json");
+        document.body.appendChild(dlNode);
+        dlNode.click();
+        dlNode.remove();
+        
+        alert("Thank you. Your data has been saved. You may close this window.");
+    }
+
+    function withdrawData() {
+        if(confirm("Are you sure? Your data will not be saved and your participation will not be counted.")) {
+            location.reload(); // Refresh page effectively deletes memory
+        }
+    }
+</script>
+
+</body>
+</html>
